@@ -52,14 +52,19 @@ def main():
     curly = User(name="curly", password="larryiscute")
     
     session.add_all([larry, moe, curly])
-    session.commit()
-    
+    # session.commit()
+        
     # moe auctions a baseball
-    
-    # larry places 2 bids
-    
-    # curly places 2 bids
+    auction = Item()
+    auction.name = "baseball"
+    auction.owner_id = moe.id
+    session.add(auction)
     session.commit()
+    # larry places bids
+    
+    # curly places bids
+    
+    
 
 if __name__ == "__main__":
     main()
