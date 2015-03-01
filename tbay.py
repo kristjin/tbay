@@ -15,10 +15,8 @@ class Item(Base):
     name = Column(String, nullable=False)
     description = Column(String)
     start_time = Column(DateTime, default=datetime.utcnow)
-        
-    #relationships
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    bids = relationship("Bid", uselist=False, backref="item")    
+    bids = relationship("Bid", backref="item")    
     
 class User(Base):
     __tablename__="users"
@@ -26,10 +24,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    
     #relationships
-    items = relationship("Item", uselist=False, backref="owner")
-    bids = relationship("Bid", uselist=False, backref="bidder")
+    items = relationship("Item", backref="owner")
+    bids = relationship("Bid", backref="bidder")
     
 class Bid(Base):
     __tablename__="bids"
@@ -49,22 +46,26 @@ def main():
     
     larry = User(name="larry", password="curlyisgay")
     moe = User(name="moe", password="seenoevil")
-    curly = User(name="curly", password="larryiscute")
+    curly = User(name="curly", password="larryiscute") 
     
-    session.add_all([larry, moe, curly])
-    # session.commit()
-        
     # moe auctions a baseball
     auction = Item()
     auction.name = "baseball"
-    auction.owner_id = moe.id
-    session.add(auction)
-    session.commit()
+    moe.items.append(auction)
+    
     # larry places bids
-    
+    bid1 = Bid(price=100, item=auction)
+    larry.bids.append(bid1)
     # curly places bids
+    bid2 = Bid(price=120, item=auction)
+    curly.bids.append(bid2)
     
+    session.add_all([larry, moe, curly, auction, bid1, bid2])
+    session.commit()
     
-
+    bids = session.query(Bid).filter(Item.id == auction.id).order_by(Bid.price).all()
+    winning_bid = bids.pop()
+    print "The winner is {} with a bid of {}!".format(winning_bid.bidder.name, winning_bid.price)
+    
 if __name__ == "__main__":
     main()
